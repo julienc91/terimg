@@ -6,39 +6,65 @@ import "fmt"
 import "strconv"
 import "image"
 import _ "image/png"
+import _ "image/jpeg"
 import _ "image/color"
 import "encoding/csv"
 
 
 var colors = [][3]uint8{}
 
+const RgbConf = "rgb.csv"
+const NbColors = 256
 const TermWidth = 80
 
 
+//Retrieve RGB values from the csv file
 func init_colors(csv_file string) {
-	file, _ := os.Open(csv_file)
+	
+	file, err := os.Open(csv_file)
+	if err != nil {
+		fmt.Println("Could not open file", csv_file)
+		os.Exit(2)
+	}
 	defer file.Close()
 	reader := csv.NewReader(file)
+	
+	var count_lines int = 0
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
+		} else if err != nil {
+			fmt.Println("Error while parsing", csv_file)
+			os.Exit(2)
 		}
-		r, _ := strconv.Atoi(record[0])
-		g, _ := strconv.Atoi(record[1])
-		b, _ := strconv.Atoi(record[2])
-		colors = append(colors, [3]uint8{uint8(r), uint8(g), uint8(b)})
+		var rgb [3]uint8
+		for i := 0; i < 3; i++ {
+			tmp, err := strconv.Atoi(record[i])
+			if err != nil {
+				fmt.Println("Error while parsing", csv_file, ":", record[i], "is not a correct value")
+				os.Exit(2)
+			}
+			rgb[i] = uint8(tmp)
+		}
+		colors = append(colors, rgb)
+		count_lines ++
+	}
+	if count_lines != 256 {
+		fmt.Println("Error while parsing", csv_file, ": there should be", NbColors, "lines, but", count_lines, "were found")
+		os.Exit(2)
 	}
 
 }
 
 
+//Find the closest 8bit color
 func closest_color(r, g, b uint8) (int) {
-	
-	var min_sum int = 200000
-	var closest_color = 0
+
 	var yuv_coeff = [3]float32{0.299, 0.587, 0.114}
-	for i := 0; i<256; i++ {
+	var min_sum, closest_color int = 200000, 0
+	
+	for i := 0; i < NbColors; i++ {
 		var sum = 0
 		var block = [3]uint8{r, g, b}
 		for j := 0; j<3; j++ {
@@ -63,6 +89,7 @@ func usage(prog_name string) {
 }
 
 
+//Main function: read the image and print the 8bit version of it
 func main() {
 
 	if len(os.Args) < 2 {
@@ -72,24 +99,42 @@ func main() {
 
 	var termWidth = TermWidth
 	if len(os.Args) == 3 {
-		termWidth, _ = strconv.Atoi(os.Args[2])
+		tmp, err := strconv.Atoi(os.Args[2])
+		if err != nil || tmp <= 0{
+			fmt.Println("Optionnal parameter [TermWidth] must be a positive integer")
+			os.Exit(2)
+		}
+		termWidth = tmp
 	}
 
-	init_colors("rgb.csv")
+	init_colors(RgbConf)
 	
-	fImg, _ := os.Open(os.Args[1])
+	fImg, err := os.Open(os.Args[1])
+	if err != nil {
+		fmt.Println("Could not open the file", os.Args[1])
+		os.Exit(2)
+	}
 	defer fImg.Close()
-	img, _, _ := image.Decode(fImg)
+	
+	img, _, err := image.Decode(fImg)
+	if err != nil {
+		fmt.Println("Could not decode image", os.Args[1])
+		os.Exit(2)
+	}
 
 	bounds := img.Bounds()
 	w, h := bounds.Max.X, bounds.Max.Y
-
+	
 	var termHeight = int(termWidth * h / w)
-	var blockWidth, blockHeight int
-	blockWidth = (w / termWidth)
-	blockHeight = (h / termHeight)
+	if termHeight > h || termHeight <= 0 || termWidth > w {
+		fmt.Println("The image is too small. Specify a smaller [TermWidth] value (maximum", w, ")")
+		os.Exit(2)
+	}
+	
+	var blockWidth, blockHeight int = w/termWidth, h/termHeight
 
 	//Consider each pixel in each block
+	var block_surface = blockWidth*blockHeight
 	for j := 0; j < termHeight; j++ {
 		for i := 0; i < termWidth; i++ {	
 			var r, g, b int = 0, 0, 0
@@ -102,9 +147,9 @@ func main() {
 					b += int(uint8(tmpb>>8))
 				}
 			}
-			r = r/(blockWidth*blockHeight)
-			g = g/(blockWidth*blockHeight)
-			b = b/(blockWidth*blockHeight)
+			r = r/block_surface
+			g = g/block_surface
+			b = b/block_surface
 
 			//Get the 'closest' shell available color
 			color := closest_color(uint8(r), uint8(g), uint8(b))
