@@ -137,22 +137,23 @@ func main() {
 	var block_surface = blockWidth*blockHeight
 	for j := 0; j < termHeight; j++ {
 		for i := 0; i < termWidth; i++ {	
-			var r, g, b int = 0, 0, 0
+			var rgb = [3]int{0, 0, 0}
 			//Compute the rgb mean value in this block
 			for y := (j*blockHeight); y < (j+1)*blockHeight; y++ {
 				for x := (i*blockWidth); x < (i+1)*blockWidth; x++ {
-					tmpr, tmpg, tmpb, _ := img.At(x, y).RGBA()
-					r += int(uint8(tmpr>>8))
-					g += int(uint8(tmpg>>8))
-					b += int(uint8(tmpb>>8))
+					var tmp = [3]uint32{}
+					tmp[0], tmp[1], tmp[2], _ = img.At(x, y).RGBA()
+					for z := 0; z < 3; z++ {
+						rgb[z] += int(uint8(tmp[z]>>8))
+					}
 				}
 			}
-			r = r/block_surface
-			g = g/block_surface
-			b = b/block_surface
+			for z := 0; z < 3; z++ {
+				rgb[z] = rgb[z]/block_surface
+			}
 
 			//Get the 'closest' shell available color
-			color := closest_color(uint8(r), uint8(g), uint8(b))
+			color := closest_color(uint8(rgb[0]), uint8(rgb[1]), uint8(rgb[2]))
 			//And print something with it
 			fmt.Print("\033[48;5;", strconv.Itoa(color), "m \033[m")
 		}
