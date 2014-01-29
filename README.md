@@ -24,8 +24,8 @@ skill in this language. Just enjoy the result!
 ![Shipwreck by Abi Danial](https://github.com/julienc91/terimg/raw/master/img/shipwreck.png
  "Shipwreck by Abi Danial")
  
-![Screenshot 1](https://github.com/julienc91/terimg/raw/master/img/shipwreck_120.png "Screenshot (120px width)
-![Screenshot 2](https://github.com/julienc91/terimg/raw/master/img/shipwreck_250.png "Screenshot (250px width)
+![Screenshot 1](https://github.com/julienc91/terimg/raw/master/img/shipwreck_120.png "Screenshot (120px width")
+![Screenshot 2](https://github.com/julienc91/terimg/raw/master/img/shipwreck_250.png "Screenshot (250px width")
 
 
 Requirements
