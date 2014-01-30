@@ -16,6 +16,8 @@ var colors = [][3]uint8{}
 const RgbConf = "rgb.csv"
 const NbColors = 256
 const TermWidth = 80
+const PreserveRatio = false
+const HWRatio = 8./15
 
 
 //Retrieve RGB values from the csv file
@@ -54,21 +56,21 @@ func init_colors(csv_file string) {
 		fmt.Println("Error while parsing", csv_file, ": there should be", NbColors, "lines, but", count_lines, "were found")
 		os.Exit(2)
 	}
-
 }
 
 
 //Find the closest 8bit color
 func closest_color(r, g, b uint8) (int) {
 
-	var yuv_coeff = [3]float32{0.299, 0.587, 0.114}
-	var min_sum, closest_color int = 200000, 0
-	
+	var yuv_coeff = [3]float64{0.299, 0.587, 0.114}
+	var min_sum = 200000000.
+		var closest_color int = 0
+
+	var block = [3]uint8{r, g, b}
 	for i := 0; i < NbColors; i++ {
-		var sum = 0
-		var block = [3]uint8{r, g, b}
+		var sum float64 = 0
 		for j := 0; j<3; j++ {
-			value := int(float32((colors[i][j]-block[j]))*yuv_coeff[j])
+			value := float64(int(colors[i][j])-int(block[j]))*yuv_coeff[j]
 			sum += value*value
 		}
 		if sum < min_sum {
@@ -84,7 +86,7 @@ func closest_color(r, g, b uint8) (int) {
 func usage(prog_name string) {
 	fmt.Println("Try to display a png image into your terminal.")
 	fmt.Println("Notice: this program was intended for Golang practice only!\n")
-	fmt.Println("Usage:", prog_name, "<path_to_png_file> [width]\n")
+	fmt.Println("Usage:", prog_name, "<path_to_png_file> [width] [preserve_ratio]\n")
 	os.Exit(2)
 }
 
@@ -98,13 +100,18 @@ func main() {
 	}
 
 	var termWidth = TermWidth
-	if len(os.Args) == 3 {
+	if len(os.Args) >= 3 {
 		tmp, err := strconv.Atoi(os.Args[2])
-		if err != nil || tmp <= 0{
+		if err != nil || tmp <= 0 {
 			fmt.Println("Optionnal parameter [TermWidth] must be a positive integer")
 			os.Exit(2)
 		}
 		termWidth = tmp
+	}
+
+	var preserve_ratio = PreserveRatio
+	if len(os.Args) == 4 {
+		preserve_ratio = true
 	}
 
 	init_colors(RgbConf)
@@ -125,7 +132,12 @@ func main() {
 	bounds := img.Bounds()
 	w, h := bounds.Max.X, bounds.Max.Y
 	
-	var termHeight = int(termWidth * h / w)
+	var termHeight = 0
+	if preserve_ratio {
+		termHeight = int(float64(termWidth * h) * HWRatio/ float64(w))
+	} else {
+		termHeight = int(termWidth * h / w)
+	}
 	if termHeight > h || termHeight <= 0 || termWidth > w {
 		fmt.Println("The image is too small. Specify a smaller [TermWidth] value (maximum", w, ")")
 		os.Exit(2)
