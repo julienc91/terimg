@@ -21,6 +21,11 @@ Introduction
 This program was made for practising GoLang and does not claim any
 skill in this language. Just enjoy the result!
 
+Examples
+--------
+
+Video demonstration: https://www.youtube.com/watch?v=89tYEL3nyLI
+
 ![Shipwreck by Abi Danial](https://github.com/julienc91/terimg/raw/master/img/shipwreck.png
  "Shipwreck by Abi Danial")
  
