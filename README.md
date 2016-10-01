@@ -15,6 +15,11 @@ Introduction
 This program was made for practising GoLang and does not claim any
 skill in this language. Just enjoy the result!
 
+Examples
+--------
+
+Video demonstration: https://www.youtube.com/watch?v=89tYEL3nyLI
+
 ![Original image](https://github.com/julienc91/terimg/raw/master/img/autumn.png)
  
 ![Screenshot 1](https://github.com/julienc91/terimg/raw/master/img/autumn_120.png "Screenshot (120px width")
