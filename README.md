@@ -20,7 +20,7 @@ Examples
 
 Video demonstration: https://www.youtube.com/watch?v=89tYEL3nyLI
 
-![Original image](https://github.com/julienc91/terimg/raw/master/img/autumn.png)
+![Original image](https://github.com/julienc91/terimg/raw/master/img/autumn.jpg)
  
 ![Screenshot 1](https://github.com/julienc91/terimg/raw/master/img/autumn_120.png "Screenshot (120px width")
 ![Screenshot 2](https://github.com/julienc91/terimg/raw/master/img/autumn_250.png "Screenshot (250px width")
